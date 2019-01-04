@@ -1,3 +1,5 @@
+// Copyright (c) 2019 Roland Bernard
+ 
 #ifndef __SCALAR_H__
 #define __SCALAR_H__
 

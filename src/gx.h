@@ -1,3 +1,5 @@
+// Copyright (c) 2019 Roland Bernard
+ 
 #ifndef __GX_H__
 #define __GX_H__
 

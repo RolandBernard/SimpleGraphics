@@ -1,3 +1,5 @@
+// Copyright (c) 2019 Roland Bernard
+ 
 
 #include "vec2.h"
 

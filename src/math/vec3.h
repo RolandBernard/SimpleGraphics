@@ -1,3 +1,5 @@
+// Copyright (c) 2019 Roland Bernard
+ 
 #ifndef __VEC3_H__
 #define __VEC3_H__
 

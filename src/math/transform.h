@@ -1,3 +1,5 @@
+// Copyright (c) 2019 Roland Bernard
+
 #ifndef __TRANSFORM_H__
 #define __TRANSFORM_H__
 

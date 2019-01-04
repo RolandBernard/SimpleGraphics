@@ -1,3 +1,5 @@
+// Copyright (c) 2019 Roland Bernard
+ 
 
 #include <assert.h>
 #include <stdio.h>

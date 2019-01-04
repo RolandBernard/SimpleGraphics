@@ -1,3 +1,5 @@
+// Copyright (c) 2019 Roland Bernard
+ 
 #ifndef __MAT4_H__
 #define __MAT4_H__
 

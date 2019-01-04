@@ -1,3 +1,5 @@
+// Copyright (c) 2019 Roland Bernard
+ 
 
 #include "mat2.h"
 
