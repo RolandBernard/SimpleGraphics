@@ -1,27 +1,6 @@
 #ifndef __HOME_ROLAND_WORKSPACE_GAME_SRC_MESH_MONKEY_H_BLENDER_EXPORT_H_
 #define __HOME_ROLAND_WORKSPACE_GAME_SRC_MESH_MONKEY_H_BLENDER_EXPORT_H_
 
-
-
-#ifndef _BLENDER_EXPORT_OBJECT_STRUCT_
-#define _BLENDER_EXPORT_OBJECT_STRUCT_
-
-struct BlenderExportedObject{
-    
-    unsigned int numVertices;
-    const float *vertices;
-    const float *normals;
-    const float *texCoords;
-    
-    unsigned int numIndices;
-    const unsigned short *indices;
-
-    const float *transform;
-    
-};
-
-#endif
-
 #define NUM_OBJECTS 1
 #define NUM_SUZANNE_OBJECT_VERTEX 7958
 #define NUM_SUZANNE_OBJECT_INDEX 15744 * 3
@@ -48,16 +27,6 @@ static const float suzanneTransform[ 16 ] = {
 	0.000000f, 0.000000f, 1.000000f, 0.000000f,
 	0.000000f, 0.000000f, 0.000000f, 1.000000f,
 
-};
-
-static const struct BlenderExportedObject suzanneObject = {
-	NUM_SUZANNE_OBJECT_VERTEX,
-	suzanneVertices,
-	suzanneNormals,
-	suzanneTexCoords,
-	NUM_SUZANNE_OBJECT_INDEX,
-	suzanneIndices,
-	suzanneTransform,
 };
 
 #endif
