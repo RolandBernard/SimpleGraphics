@@ -154,11 +154,7 @@ int main(void) {
 	data.ind = suzanneIndices;
 	data.num_ind = NUM_SUZANNE_OBJECT_INDEX;
 
-	gx_render_target_t target;
-	target.width = width;
-	target.height = height;
-	target.dbuffer = (scalar_t*)malloc(sizeof(scalar_t)*(width)*(height));
-	target.cbuffer = (gx_color_t*)malloc(sizeof(gx_color_t)*(width)*(height));
+	gx_render_target_t* target = gx_create_render_target(width, height);
 
 	gx_near_plane = 0.05;
 
@@ -182,12 +178,8 @@ int main(void) {
 					XDestroyImage(img);
 					fdata = (unsigned char(*)[4])malloc(sizeof(unsigned char[4])*width*height);
 					img = XCreateImage(display, visual, DefaultDepth(display, screen_num), ZPixmap, 0, (char*)fdata, width, height, 32, 0);
-					target.width = width;
-					target.height = height;
-					free(target.dbuffer);
-					free(target.cbuffer);
-					target.dbuffer = (scalar_t*)malloc(sizeof(scalar_t)*(width)*(height));
-					target.cbuffer = (gx_color_t*)malloc(sizeof(gx_color_t)*(width)*(height));
+					gx_free_render_target(target);
+					target = gx_create_render_target(width, height);
 				}
 			}
 		}
@@ -215,17 +207,17 @@ int main(void) {
 		data.mv = mat4_mul(view, model);
 		data.mvp = mat4_mul(proj, data.mv);
 
-		//mat4_t planemvp = mat4_mul(proj, mat4_mul(view, mat3_to_mat4(mat3_scale_trans(6.0))));
+		mat4_t planemvp = mat4_mul(proj, mat4_mul(view, mat3_to_mat4(mat3_scale_trans(6.0))));
 
 		// Rendering
 		struct timespec start, end;
 		
 		clock_gettime(CLOCK_MONOTONIC, &start);
 		gx_color_t black = { 0.0, 0.0, 0.0 };
-		clear_color(&target, black);
-		clear_depth(&target, 1.0);
-		render(&target, &data, 9, data.num_ind/3, vshader, fshader);
-		//render(&target, &planemvp, 2, 12, planevshder, planefshader);
+		clear_color(target, black);
+		clear_depth(target, 1.0);
+		render(target, &data, 9, data.num_ind/3, vshader, fshader);
+		render(target, &planemvp, 2, 12, planevshder, planefshader);
 		clock_gettime(CLOCK_MONOTONIC, &end);
 		
 		int t = (end.tv_sec - start.tv_sec) * 1000000;
@@ -239,9 +231,9 @@ int main(void) {
 
 		// Drawing to screen
 		for(int i = 0; i < width*height; i++) {
-				fdata[i][2] = (unsigned char)(int)((target.cbuffer[i][0])*255.0);
-				fdata[i][1] = (unsigned char)(int)((target.cbuffer[i][1])*255.0);
-				fdata[i][0] = (unsigned char)(int)((target.cbuffer[i][2])*255.0);
+				fdata[i][2] = (unsigned char)(int)((target->cbuffer[i][0])*255.0);
+				fdata[i][1] = (unsigned char)(int)((target->cbuffer[i][1])*255.0);
+				fdata[i][0] = (unsigned char)(int)((target->cbuffer[i][2])*255.0);
 				fdata[i][3] = 255;
 		}
 		
@@ -250,8 +242,7 @@ int main(void) {
 		usleep(max(20000-t, 0));
 	} while (running);
 
-	free(target.dbuffer);
-	free(target.cbuffer);
+	gx_free_render_target(target);
 
 	XDestroyImage(img);
 	XDestroyWindow(display, win);

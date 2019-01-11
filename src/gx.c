@@ -30,6 +30,30 @@ scalar_t edge_function(vec2_t v0, vec2_t v1, vec2_t v2) {
 	return (v2.xy[0] - v0.xy[0])*(v1.xy[1] - v0.xy[1]) - (v2.xy[1] - v0.xy[1])*(v1.xy[0] - v0.xy[0]);
 }
 
+gx_render_target_t* gx_create_render_target(int width, int height) {
+	gx_render_target_t* ret = (gx_render_target_t*)malloc(sizeof(gx_render_target_t));
+
+	ret->width = width;
+	ret->height = height;
+	ret->cbuffer = (gx_color_t*)malloc(width*height*sizeof(gx_color_t));
+	ret->dbuffer = (scalar_t*)malloc(width*height*sizeof(scalar_t));
+	ret->buffer_lock = (pthread_mutex_t*)malloc(width*height*sizeof(pthread_mutex_t));
+
+	for(int i = 0; i < width*height; i++)
+		pthread_mutex_init(ret->buffer_lock + i, NULL);
+
+	return ret;
+}
+
+void gx_free_render_target(gx_render_target_t* target) {
+	free(target->cbuffer);
+	free(target->dbuffer);
+	for(int i = 0; i < target->width*target->height; i++)
+		pthread_mutex_destroy(target->buffer_lock + i);
+	free(target->buffer_lock);
+	free(target);
+}
+
 typedef struct {
 	gx_render_target_t* target;
 	void* sudata;
@@ -51,6 +75,7 @@ static void* render_thread(void* data) {
 	int attr_size = d->attr_size;
 	scalar_t* dbuffer = d->target->dbuffer;
 	gx_color_t* cbuffer = d->target->cbuffer;
+	pthread_mutex_t* buffer_lock = d->target->buffer_lock;
 	int num_tri = d->num_tri;
 	gx_attr_t* v[4];
 	vec2_t vp[4];
@@ -201,9 +226,11 @@ static void* render_thread(void* data) {
 										int buffer_index = (height - y - 1)*width + x;
 										scalar_t* dloc = dbuffer + buffer_index;
 										// Check Z-buffer
+										pthread_mutex_lock(buffer_lock + buffer_index);
 										if(z < *dloc) {
 											*dloc = z;
-	
+											pthread_mutex_unlock(buffer_lock + buffer_index);
+
 											scalar_t w = 1 / (v[0]->pos.xyzw[3]*w0 + v[1]->pos.xyzw[3]*w1 + v[2]->pos.xyzw[3]*w2);
 											f->pos.xyzw[0] = w*(v[0]->pos.xyzw[0]*w0 + v[1]->pos.xyzw[0]*w1 + v[2]->pos.xyzw[0]*w2);
 											f->pos.xyzw[1] = w*(v[0]->pos.xyzw[1]*w0 + v[1]->pos.xyzw[1]*w1 + v[2]->pos.xyzw[1]*w2);
@@ -212,9 +239,12 @@ static void* render_thread(void* data) {
 	
 											for(int k = 0; k < attr_size; k++)
 												f->data[k] =  w*(v[0]->data[k]*w0 + v[1]->data[k]*w1 + v[2]->data[k]*w2);
-	
-											fshader(udata, f, cbuffer + buffer_index);
+
+											pthread_mutex_lock(buffer_lock + buffer_index);
+											if(z == *dloc)
+												fshader(udata, f, cbuffer + buffer_index);
 										}
+										pthread_mutex_unlock(buffer_lock + buffer_index);
 									}
 								}
 							}
@@ -299,9 +329,11 @@ static void* render_thread(void* data) {
 										int buffer_index = (height - y - 1)*width + x;
 										scalar_t* dloc = dbuffer + buffer_index;
 										// Check Z-buffer
+										pthread_mutex_lock(buffer_lock + buffer_index);
 										if(z < *dloc) {
 											*dloc = z;
-	
+											pthread_mutex_unlock(buffer_lock + buffer_index);
+
 											scalar_t w = 1 / (v[0]->pos.xyzw[3]*w0 + v[1]->pos.xyzw[3]*w1 + v[2]->pos.xyzw[3]*w2);
 											f->pos.xyzw[0] = w*(v[0]->pos.xyzw[0]*w0 + v[1]->pos.xyzw[0]*w1 + v[2]->pos.xyzw[0]*w2);
 											f->pos.xyzw[1] = w*(v[0]->pos.xyzw[1]*w0 + v[1]->pos.xyzw[1]*w1 + v[2]->pos.xyzw[1]*w2);
@@ -310,9 +342,12 @@ static void* render_thread(void* data) {
 	
 											for(int k = 0; k < attr_size; k++)
 												f->data[k] =  w*(v[0]->data[k]*w0 + v[1]->data[k]*w1 + v[2]->data[k]*w2);
-	
-											fshader(udata, f, cbuffer + buffer_index);
+
+											pthread_mutex_lock(buffer_lock + buffer_index);
+											if(z == *dloc)
+												fshader(udata, f, cbuffer + buffer_index);
 										}
+										pthread_mutex_unlock(buffer_lock + buffer_index);
 									}
 								} else if(
 									((w0 = edge_function(vp[2], vp[3], p)) < 0 ||
@@ -331,8 +366,10 @@ static void* render_thread(void* data) {
 										int buffer_index = (height - y - 1)*width + x;
 										scalar_t* dloc = dbuffer + buffer_index;
 										// Check Z-buffer
+										pthread_mutex_lock(buffer_lock + buffer_index);
 										if(z < *dloc) {
 											*dloc = z;
+											pthread_mutex_unlock(buffer_lock + buffer_index);
 	
 											scalar_t w = 1 / (v[0]->pos.xyzw[3]*w0 + v[2]->pos.xyzw[3]*w1 + v[3]->pos.xyzw[3]*w2);
 											f->pos.xyzw[0] = w*(v[0]->pos.xyzw[0]*w0 + v[2]->pos.xyzw[0]*w1 + v[3]->pos.xyzw[0]*w2);
@@ -343,8 +380,11 @@ static void* render_thread(void* data) {
 											for(int k = 0; k < attr_size; k++)
 												f->data[k] =  w*(v[0]->data[k]*w0 + v[2]->data[k]*w1 + v[3]->data[k]*w2);
 	
-											fshader(udata, f, cbuffer + buffer_index);
+											pthread_mutex_lock(buffer_lock + buffer_index);
+											if(z == *dloc)
+												fshader(udata, f, cbuffer + buffer_index);
 										}
+										pthread_mutex_unlock(buffer_lock + buffer_index);
 									}
 									
 								}
