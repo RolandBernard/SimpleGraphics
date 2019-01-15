@@ -1,3 +1,5 @@
+// Copyright (c) 2019 Roland Bernard
+ 
 #ifndef __MAT2_H__
 #define __MAT2_H__
 

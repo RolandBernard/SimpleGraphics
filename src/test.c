@@ -164,6 +164,9 @@ int main(void) {
 	float angle = 0;
 	XEvent event;
 	do {
+		struct timespec start, end;
+		clock_gettime(CLOCK_MONOTONIC, &start);
+		
 		run++;
 		while(XPending(display)) {
 			XNextEvent(display, &event);
@@ -186,13 +189,13 @@ int main(void) {
 
 		angle += 0.04;
 
-		scalar_t z = 5;//(cosf(angle))*3*(1.0+sinf(angle/12));
-		scalar_t x = 5;//(sinf(angle))*3*(1.0+sinf(angle/12));
+		scalar_t z = sinf(angle)*2+3;//(cosf(angle))*3*(1.0+sinf(angle/12));
+		scalar_t x = cosf(angle)*2+3;//(sinf(angle))*3*(1.0+sinf(angle/12));
 		scalar_t y = 5;//*(1.0+cos(angle/12));
 
 		//computeMatricesFromInputs();
 		mat4_t proj = mat4_proj_trans((float)width/(float)height, 0.1, 300.0, 1.0);
-		mat4_t view = mat4_view_trans(vec3(x, y, z), vec3(0,0,0), vec3(0,1,0));
+		mat4_t view = mat4_view_trans(vec3(x, y, z), vec3(3,3,3), vec3(0,1,0));
 		mat4_t model;
 		for(int i = 0; i < 16; i++) {
 			model.d[i%4][i/4] = suzanneTransform[i];
@@ -207,27 +210,14 @@ int main(void) {
 		data.mv = mat4_mul(view, model);
 		data.mvp = mat4_mul(proj, data.mv);
 
-		mat4_t planemvp = mat4_mul(proj, mat4_mul(view, mat3_to_mat4(mat3_scale_trans(6.0))));
+		//mat4_t planemvp = mat4_mul(proj, mat4_mul(view, mat3_to_mat4(mat3_scale_trans(6.0))));
 
 		// Rendering
-		struct timespec start, end;
-		
-		clock_gettime(CLOCK_MONOTONIC, &start);
 		gx_color_t black = { 0.0, 0.0, 0.0 };
 		clear_color(target, black);
 		clear_depth(target, 1.0);
 		render(target, &data, 9, data.num_ind/3, vshader, fshader);
-		render(target, &planemvp, 2, 12, planevshder, planefshader);
-		clock_gettime(CLOCK_MONOTONIC, &end);
-		
-		int t = (end.tv_sec - start.tv_sec) * 1000000;
-		t += (end.tv_nsec - start.tv_nsec) / 1000;
-		avg = avg + (t-avg)/run;
-		if(run >= 10) {
-			fprintf(stderr, "Render time: %g\n", avg/1000000.0);
-			run = 0;
-			avg = 0;
-		}
+		//render(target, &planemvp, 2, 12, planevshder, planefshader);
 
 		// Drawing to screen
 		for(int i = 0; i < width*height; i++) {
@@ -238,8 +228,23 @@ int main(void) {
 		}
 		
 
+		clock_gettime(CLOCK_MONOTONIC, &end);
+		int t = (end.tv_sec - start.tv_sec) * 1000000;
+		t += (end.tv_nsec - start.tv_nsec) / 1000;
+		avg = avg + (t-avg)/run;
+		if(run >= 10) {
+			fprintf(stderr, "Render time: %g\n", avg/1000000.0);
+			run = 0;
+			avg = 0;
+		}
+
 		XPutImage(display, win, DefaultGC(display, screen_num), img, 0, 0, 0, 0, width, height);
-		usleep(max(20000-t, 0));
+		if(t > 20000)
+			while(t > 20000) {
+				angle += 0.04;
+				t -= 20000;
+			}
+		usleep(20000-t);
 	} while (running);
 
 	gx_free_render_target(target);

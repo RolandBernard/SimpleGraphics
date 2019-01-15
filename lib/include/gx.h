@@ -1,7 +1,11 @@
+// Copyright (c) 2019 Roland Bernard
+ 
 #ifndef __GX_H__
 #define __GX_H__
 
 #include "math/math.h"
+
+#include <pthread.h>
 
 typedef struct {
 	vec4_t pos;
@@ -19,7 +23,12 @@ typedef struct {
 	int height;
 	gx_color_t* cbuffer;
 	scalar_t* dbuffer;
+	pthread_mutex_t* buffer_lock;
 } gx_render_target_t;
+
+gx_render_target_t* gx_create_render_target(int width, int height);
+
+void gx_free_render_target(gx_render_target_t* target);
 
 void clear_color(gx_render_target_t* target, gx_color_t color);
 
