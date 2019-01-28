@@ -3,9 +3,9 @@
 #ifndef __GX_H__
 #define __GX_H__
 
-#include "math/math.h"
-
 #include <pthread.h>
+
+#include "math/math.h"
 
 typedef struct {
 	vec4_t pos;
