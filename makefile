@@ -15,6 +15,8 @@ CC=gcc
 CLEAN=rm -f
 COPY=cp -R
 
+all: ./lib $(TARGET)
+
 ./lib: $(OBJECTS)
 	$(COPY) $(SRC)/math/{scalar.h,vec2.h,vec3.h,vec4.h,mat2.h,mat3.h,mat4.h,transform.h,math.h} $(INCLUDE)/math/
 	$(COPY) $(SRC)/gx.h $(INCLUDE)/
@@ -22,8 +24,6 @@ COPY=cp -R
 
 $(TARGET): $(OBJECTS) $(BUILD)/test.o
 	$(CC) $(ARGS) -o $(TARGET) $(OBJECTS) $(BUILD)/test.o $(LIBS)
-
-all: ./lib $(TARGET)
 
 $(BUILD)/test.o: $(SRC)/test.c $(SRC)/gx.h $(MSRC)/vec3.h $(MSRC)/vec4.h $(MSRC)/mat3.h $(MSRC)/transform.h $(MSRC)/mat4.h
 	$(CC) $(ARGS) -c -o $(BUILD)/test.o $(SRC)/test.c
