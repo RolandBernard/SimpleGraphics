@@ -30,11 +30,11 @@ gx_render_target_t* gx_create_render_target(int width, int height);
 
 void gx_free_render_target(gx_render_target_t* target);
 
-void clear_color(gx_render_target_t* target, gx_color_t color);
+void gx_clear_color(gx_render_target_t* target, gx_color_t color);
 
-void clear_depth(gx_render_target_t* target, scalar_t d);
+void gx_clear_depth(gx_render_target_t* target, scalar_t d);
 
-void render(gx_render_target_t* target, void* udata, int attr_size, int num_tri, vert_shader_t vshader, frag_shader_t fshader);
+void gx_render(gx_render_target_t* target, void* udata, int attr_size, int num_tri, vert_shader_t vshader, frag_shader_t fshader);
 
 extern scalar_t gx_near_plane;
 

@@ -214,10 +214,10 @@ int main(void) {
 
 		// Rendering
 		gx_color_t black = { 0.0, 0.0, 0.0 };
-		clear_color(target, black);
-		clear_depth(target, 1.0);
-		render(target, &data, 9, data.num_ind/3, vshader, fshader);
-		//render(target, &planemvp, 2, 12, planevshder, planefshader);
+		gx_clear_color(target, black);
+		gx_clear_depth(target, 1.0);
+		gx_render(target, &data, 9, data.num_ind/3, vshader, fshader);
+		//gx_render(target, &planemvp, 2, 12, planevshder, planefshader);
 
 		// Drawing to screen
 		for(int i = 0; i < width*height; i++) {

@@ -13,7 +13,7 @@
 
 scalar_t gx_near_plane = 1e-2;
 
-void clear_color(gx_render_target_t* target, gx_color_t color) {
+void gx_clear_color(gx_render_target_t* target, gx_color_t color) {
 	for(int i = 0; i < target->width*target->height; i++) {
 		target->cbuffer[i][0] = color[0];
 		target->cbuffer[i][1] = color[1];
@@ -21,12 +21,12 @@ void clear_color(gx_render_target_t* target, gx_color_t color) {
 	}
 }
 
-void clear_depth(gx_render_target_t* target, scalar_t d) {
+void gx_clear_depth(gx_render_target_t* target, scalar_t d) {
 	for(int i = 0; i < target->width*target->height; i++)
 		target->dbuffer[i] = d;
 }
 
-scalar_t edge_function(vec2_t v0, vec2_t v1, vec2_t v2) {
+static scalar_t edge_function(vec2_t v0, vec2_t v1, vec2_t v2) {
 	return (v2.xy[0] - v0.xy[0])*(v1.xy[1] - v0.xy[1]) - (v2.xy[1] - v0.xy[1])*(v1.xy[0] - v0.xy[0]);
 }
 
@@ -402,7 +402,7 @@ static void* render_thread(void* data) {
 	return NULL;
 }
 
-void render(gx_render_target_t* target, void* udata, int attr_size, int num_tri, vert_shader_t vshader, frag_shader_t fshader) {
+void gx_render(gx_render_target_t* target, void* udata, int attr_size, int num_tri, vert_shader_t vshader, frag_shader_t fshader) {
 	gx_render_udata_t render_data;
 	render_data.target = target;
 	render_data.sudata = udata;
