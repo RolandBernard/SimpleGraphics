@@ -8,6 +8,8 @@
 #include <unistd.h>
 #include <string.h>
 #include <time.h>
+#include <pthread.h>
+#include <signal.h>
 
 #include <tir.h>
 
@@ -127,9 +129,18 @@ void planefshader(void* udata, gx_attr_t* in, gx_color_t* color) {
 
 static int width = 500;
 static int height = 500;
+static int running = 1;
 
+void sig_hand(int sig) {
+	if(sig == SIGINT)
+		running = 0;
+}
 
 int main(void) {
+	if(signal(SIGINT, sig_hand) == SIG_ERR) {
+		perror("couldn't set signal");
+		exit(EXIT_FAILURE);
+	}
 	tir_init_scr();
 
 	udata_t data;
@@ -198,7 +209,7 @@ int main(void) {
 		tir_unlock_buffer();
 
 		usleep(20000);
-	} while (1);
+	} while (running);
 
 	gx_free_render_target(target);
 	tir_end_scr();
