@@ -9,8 +9,7 @@
 #include <string.h>
 #include <time.h>
 
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
+#include <tir.h>
 
 #include "math/math.h"
 #include "math/transform.h"
@@ -129,23 +128,9 @@ void planefshader(void* udata, gx_attr_t* in, gx_color_t* color) {
 static int width = 500;
 static int height = 500;
 
+
 int main(void) {
-
-	Display* display = XOpenDisplay(NULL);
-	int screen_num = DefaultScreen(display);
-	Window root = RootWindow(display, screen_num);
-	Visual* visual = DefaultVisual(display, screen_num);
-
-	unsigned char (*fdata)[4] = (unsigned char(*)[4])malloc(sizeof(unsigned char[4])*width*height);
-
-	XImage* img = XCreateImage(display, visual, DefaultDepth(display, screen_num), ZPixmap, 0, (char*)fdata, width, height, 32, 0);
-
-	Window win = XCreateSimpleWindow(display, root, 50, 50, width, height, 1, 0, 0);
-	XSelectInput(display, win, KeyPressMask | KeyReleaseMask | StructureNotifyMask);
-	XMapWindow(display, win);
-
-	Atom wmDeleteMessage = XInternAtom(display, "WM_DELETE_WINDOW", 0);
-	XSetWMProtocols(display, win, &wmDeleteMessage, 1);
+	tir_init_scr();
 
 	udata_t data;
 	data.pos = (const float(*)[3])suzanneVertices;
@@ -158,33 +143,16 @@ int main(void) {
 
 	gx_near_plane = 0.05;
 
-	int run = 0;
-	clock_t avg = 0;
-	int running = 1;
 	float angle = 0;
-	XEvent event;
 	do {
-		struct timespec start, end;
-		clock_gettime(CLOCK_MONOTONIC, &start);
-		
-		run++;
-		while(XPending(display)) {
-			XNextEvent(display, &event);
-			if(event.xclient.data.l[0] == wmDeleteMessage) {
-				running = 0;
-			} else if(event.type == ConfigureNotify) {
-				XConfigureEvent xce = event.xconfigure;
-
-				if(width != xce.width || height != xce.height) {
-					width = xce.width;
-					height = xce.height;
-					XDestroyImage(img);
-					fdata = (unsigned char(*)[4])malloc(sizeof(unsigned char[4])*width*height);
-					img = XCreateImage(display, visual, DefaultDepth(display, screen_num), ZPixmap, 0, (char*)fdata, width, height, 32, 0);
-					gx_free_render_target(target);
-					target = gx_create_render_target(width, height);
-				}
-			}
+		tir_lock_buffer();
+		int n_width = tir_get_width();
+		int n_height = tir_get_height();
+		if(n_width != width || n_height != height) {
+			width = n_width;
+			height = n_height;
+			gx_free_render_target(target);
+			target = gx_create_render_target(width, height);
 		}
 
 		angle += 0.04;
@@ -221,37 +189,19 @@ int main(void) {
 
 		// Drawing to screen
 		for(int i = 0; i < width*height; i++) {
-				fdata[i][2] = (unsigned char)(int)((target->cbuffer[i][0])*255.0);
-				fdata[i][1] = (unsigned char)(int)((target->cbuffer[i][1])*255.0);
-				fdata[i][0] = (unsigned char)(int)((target->cbuffer[i][2])*255.0);
-				fdata[i][3] = 255;
+			tir_color_t* pix = tir_get_pixel(i%width, i/width);
+			pix[0][0] = (unsigned char)(int)((target->cbuffer[i][0])*255.0);
+			pix[0][1] = (unsigned char)(int)((target->cbuffer[i][1])*255.0);
+			pix[0][2] = (unsigned char)(int)((target->cbuffer[i][2])*255.0);
 		}
-		
+		tir_refresh();
+		tir_unlock_buffer();
 
-		clock_gettime(CLOCK_MONOTONIC, &end);
-		int t = (end.tv_sec - start.tv_sec) * 1000000;
-		t += (end.tv_nsec - start.tv_nsec) / 1000;
-		avg = avg + (t-avg)/run;
-		if(run >= 10) {
-			fprintf(stderr, "Render time: %g\n", avg/1000000.0);
-			run = 0;
-			avg = 0;
-		}
-
-		XPutImage(display, win, DefaultGC(display, screen_num), img, 0, 0, 0, 0, width, height);
-		if(t > 20000)
-			while(t > 20000) {
-				angle += 0.04;
-				t -= 20000;
-			}
-		usleep(20000-t);
-	} while (running);
+		usleep(20000);
+	} while (1);
 
 	gx_free_render_target(target);
-
-	XDestroyImage(img);
-	XDestroyWindow(display, win);
-	XCloseDisplay(display);
+	tir_end_scr();
 
 	return 0;
 }

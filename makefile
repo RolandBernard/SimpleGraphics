@@ -5,8 +5,8 @@ MBUILD=$(BUILD)/math
 LIB=./lib/bin
 INCLUDE=./lib/include
 
-LIBS=-lm -lpthread -lX11
-ARGS=-O3 -Wall
+LIBS=-lm -lpthread -ltir
+ARGS=-O3 -Wall -L./lib/bin/ -I./lib/include 
 OBJECTS=$(MBUILD)/vec2.o $(MBUILD)/vec3.o $(MBUILD)/vec4.o $(MBUILD)/mat2.o $(MBUILD)/mat3.o $(MBUILD)/mat4.o $(MBUILD)/transform.o\
 $(BUILD)/gx.o
 TARGET=./test
