@@ -172,7 +172,7 @@ int main(void) {
 		scalar_t y = 5;//*(1.0+cos(angle/12));
 
 		//computeMatricesFromInputs();
-		mat4_t proj = mat4_proj_trans((float)width/(float)height, 0.1, 300.0, 1.0);
+		mat4_t proj = mat4_proj_trans((float)width/(float)height*0.6, 0.1, 300.0, 1.0);
 		mat4_t view = mat4_view_trans(vec3(x, y, z), vec3(3,3,3), vec3(0,1,0));
 		mat4_t model;
 		for(int i = 0; i < 16; i++) {
