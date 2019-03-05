@@ -18,7 +18,7 @@ COPY=cp -R
 all: ./lib $(TARGET)
 
 ./lib: $(OBJECTS)
-	$(COPY) $(SRC)/math/{scalar.h,vec2.h,vec3.h,vec4.h,mat2.h,mat3.h,mat4.h,transform.h,math.h} $(INCLUDE)/math/
+	$(COPY) $(SRC)/math/scalar.h $(SRC)/math/vec2.h $(SRC)/math/vec3.h $(SRC)/math/vec4.h $(SRC)/math/mat2.h $(SRC)/math/mat3.h $(SRC)/math/mat4.h $(SRC)/math/transform.h $(SRC)/math/math.h $(INCLUDE)/math/
 	$(COPY) $(SRC)/gx.h $(INCLUDE)/
 	ar rcs $(LIB)/$(LIBTARGET) $(OBJECTS)
 
