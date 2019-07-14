@@ -26,10 +26,6 @@ void gx_clear_depth(gx_render_target_t* target, scalar_t d) {
 		target->dbuffer[i] = d;
 }
 
-static scalar_t edge_function(vec2_t v0, vec2_t v1, vec2_t v2) {
-	return (v2.xy[0] - v0.xy[0])*(v1.xy[1] - v0.xy[1]) - (v2.xy[1] - v0.xy[1])*(v1.xy[0] - v0.xy[0]);
-}
-
 gx_render_target_t* gx_create_render_target(int width, int height) {
 	gx_render_target_t* ret = (gx_render_target_t*)malloc(sizeof(gx_render_target_t));
 
@@ -64,6 +60,10 @@ typedef struct {
 	vert_shader_t vshader;
 	frag_shader_t fshader;
 } gx_render_udata_t;
+
+static scalar_t edge_function(vec2_t v0, vec2_t v1, vec2_t v2) {
+	return (v2.xy[0] - v0.xy[0])*(v1.xy[1] - v0.xy[1]) - (v2.xy[1] - v0.xy[1])*(v1.xy[0] - v0.xy[0]);
+}
 
 static void* render_thread(void* data) {
 	gx_render_udata_t* d = (gx_render_udata_t*)data;
