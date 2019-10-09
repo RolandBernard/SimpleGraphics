@@ -1,0 +1,6 @@
+build/*
+build/lib/bin/*
+build/lib/include/*
+lib/bin/*
+lib/include/*
+test

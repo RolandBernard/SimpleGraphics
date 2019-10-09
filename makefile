@@ -4,9 +4,11 @@ BUILD=./build
 MBUILD=$(BUILD)/math
 LIB=./lib/bin
 INCLUDE=./lib/include
+LIBBUILD=$(BUILD)/lib/bin
+INCLUDEBUILD=$(BUILD)/lib/include
 
 LIBS=-lm -lpthread -ltir
-ARGS=-O3 -Wall -L./lib/bin/ -I./lib/include 
+ARGS=-O3 -Wall -L$(LIB) -I$(INCLUDE)
 OBJECTS=$(MBUILD)/vec2.o $(MBUILD)/vec3.o $(MBUILD)/vec4.o $(MBUILD)/mat2.o $(MBUILD)/mat3.o $(MBUILD)/mat4.o $(MBUILD)/transform.o\
 $(BUILD)/gx.o
 TARGET=./test
@@ -18,9 +20,9 @@ COPY=cp -R
 all: ./lib $(TARGET)
 
 ./lib: $(OBJECTS)
-	$(COPY) $(SRC)/math/scalar.h $(SRC)/math/vec2.h $(SRC)/math/vec3.h $(SRC)/math/vec4.h $(SRC)/math/mat2.h $(SRC)/math/mat3.h $(SRC)/math/mat4.h $(SRC)/math/transform.h $(SRC)/math/math.h $(INCLUDE)/math/
-	$(COPY) $(SRC)/gx.h $(INCLUDE)/
-	ar rcs $(LIB)/$(LIBTARGET) $(OBJECTS)
+	$(COPY) $(SRC)/math/scalar.h $(SRC)/math/vec2.h $(SRC)/math/vec3.h $(SRC)/math/vec4.h $(SRC)/math/mat2.h $(SRC)/math/mat3.h $(SRC)/math/mat4.h $(SRC)/math/transform.h $(SRC)/math/math.h $(INCLUDEBUILD)/math/
+	$(COPY) $(SRC)/gx.h $(INCLUDEBUILD)/
+	ar rcs $(LIBBUILD)/$(LIBTARGET) $(OBJECTS)
 
 $(TARGET): $(OBJECTS) $(BUILD)/test.o
 	$(CC) $(ARGS) -o $(TARGET) $(OBJECTS) $(BUILD)/test.o $(LIBS)
@@ -56,4 +58,4 @@ clean:
 	$(CLEAN) $(OBJECTS) $(BUILD)/test.o
 
 cleanall:
-	$(CLEAN) $(OBJECTS) $(BUILD)/test.o $(TARGET) $(LIBTARGET)
+	$(CLEAN) $(OBJECTS) $(BUILD)/test.o $(TARGET) $(INCLUDEBUILD)/* $(INCLUDEBUILD)/math/* $(LIBBUILD)/$(LIBTARGET)
