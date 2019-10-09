@@ -1,6 +1,8 @@
 build/*
+build/math/*
 build/lib/bin/*
 build/lib/include/*
+build/lib/include/math/*
 lib/bin/*
 lib/include/*
 test
