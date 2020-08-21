@@ -8,4 +8,3 @@ A small test is included (`./src/test.c`, `./test`, `./build/test.o`):
 ![Screenshot](img/screenshot.png)
 
 ---
-###### Copyright (c) 2019 Roland Bernard
